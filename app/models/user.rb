@@ -129,6 +129,7 @@ class User < ApplicationRecord
 
   before_validation :sanitize_role
   before_create :set_approved
+  before_create :auto_confirm
   after_commit :send_pending_devise_notifications
   after_create_commit :trigger_webhooks
 
@@ -442,7 +443,10 @@ class User < ApplicationRecord
       end
     end
   end
-
+  def auto_confirm
+    self.confirmed_at = Time.now.utc
+  end
+  
   def sign_up_from_ip_requires_approval?
     sign_up_ip.present? && IpBlock.severity_sign_up_requires_approval.exists?(['ip >>= ?', sign_up_ip.to_s])
   end
